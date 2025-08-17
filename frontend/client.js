@@ -185,6 +185,46 @@
             
             // Initialize main game
             initMainGame();
+                socket = new WebSocket("ws://localhost:3000");
+
+socket.onopen = () => {
+  socket.send(JSON.stringify({ type: "join", id: myPlayerId, avatar: currentAvatar }));
+};
+
+socket.onmessage = (event) => {
+  const data = JSON.parse(event.data);
+  if (data.type === "spawn") {
+    // spawn other players
+    const newPlayer = {
+      id: data.id,
+      avatar: data.avatar,
+      position: new THREE.Vector3(0, 1.6, 0),
+      rotation: 0,
+      isDancing: false,
+      character: createCharacterModel(data.avatar)
+    };
+    scene.add(newPlayer.character);
+    players.set(data.id, newPlayer);
+    updatePlayersList();
+  } else if (data.type === "update") {
+    const other = players.get(data.id);
+    if (other && other.character) {
+      other.character.position.set(data.pos.x, data.pos.y, data.pos.z);
+      other.character.rotation.y = data.rot;
+    }
+  } else if (data.type === "chat") {
+    const sender = players.get(data.id);
+    if (sender) addChatMessage(sender.avatar.name, data.msg);
+  } else if (data.type === "despawn") {
+    const gone = players.get(data.id);
+    if (gone) {
+      scene.remove(gone.character);
+      players.delete(data.id);
+      updatePlayersList();
+    }
+  }
+};
+
         }
         
         // Main game variables
