@@ -969,3 +969,39 @@
         
         // Initialize avatar creator when page loads
         initAvatarCreator();
+let token = null;
+let socket = null;
+
+// Login handling
+document.getElementById("login-btn").onclick = async () => {
+  const u = document.getElementById("login-username").value;
+  const p = document.getElementById("login-password").value;
+  const res = await fetch("/login", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: u, password: p })
+  });
+  const data = await res.json();
+  if (data.token) {
+    token = data.token;
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("avatar-creator").style.display = "block";
+  } else {
+    document.getElementById("login-status").textContent = data.error || "Login failed";
+  }
+};
+
+document.getElementById("register-btn").onclick = async () => {
+  const u = document.getElementById("login-username").value;
+  const p = document.getElementById("login-password").value;
+  const res = await fetch("/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ username: u, password: p })
+  });
+  const data = await res.json();
+  document.getElementById("login-status").textContent = data.success
+    ? "Registered! Now log in."
+    : data.error || "Error";
+};
+
